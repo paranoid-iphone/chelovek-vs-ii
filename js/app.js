@@ -16,6 +16,10 @@ const state = {
   shownAt: 0,         // когда показали текущий снимок (для замера времени)
   survey: {},         // ответы анкеты
   participant: null,  // случайный анонимный номер участника
+  practiceSet: [],    // [{file, label, hint}] — тренировочные снимки с подсказками
+  practiceOrder: [],  // в каком порядке показываем тренировку этому участнику
+  practiceIndex: 0,
+  practiceCorrect: 0, // сколько тренировочных снимков угадано (в таблицу уходит как есть)
 };
 
 let model = null;         // нейросеть
@@ -55,6 +59,12 @@ async function loadTestSet() {
   state.testSet = data.images;
   $$("[data-total]").forEach((el) => (el.textContent = data.images.length));
   if (data.demo) $$("[data-demo-note]").forEach((el) => (el.hidden = false));
+}
+
+async function loadPracticeSet() {
+  const res = await fetch(CONFIG.PRACTICE_SET_URL, { cache: "no-cache" });
+  state.practiceSet = (await res.json()).images;
+  $$("[data-practice-total]").forEach((el) => (el.textContent = state.practiceSet.length));
 }
 
 function loadModel() {
@@ -109,13 +119,81 @@ function loadImage(src) {
 // ---------------------------------------------------------------------
 // Анкета
 // ---------------------------------------------------------------------
-$$('.choice input[type="radio"]').forEach((input) =>
+const SURVEY_FIELDS = ["group", "age", "medical", "trustBefore"];
+
+$$('.screen[data-screen="survey"] .choice input[type="radio"]').forEach((input) =>
   input.addEventListener("change", () => {
     state.survey[input.name] = input.value;
-    $('[data-action="survey-next"]').disabled = !(state.survey.group && state.survey.medical);
+    $('[data-action="survey-next"]').disabled = !SURVEY_FIELDS.every((f) => state.survey[f]);
   })
 );
 $('[data-action="survey-next"]').addEventListener("click", () => show("learn"));
+
+// ---------------------------------------------------------------------
+// Тренировка: снимки с ответом сразу, чтобы научиться до настоящего теста
+// ---------------------------------------------------------------------
+const practiceImg = $("[data-practice-image]");
+const practiceAnswers = $("[data-practice-answers]");
+const practiceButtons = $$("[data-practice-answer]");
+const practiceFeedback = $("[data-practice-feedback]");
+const practiceDone = $("[data-practice-done]");
+
+$('[data-action="start-practice"]').addEventListener("click", () => {
+  if (!state.practiceSet.length) { startTest(); return; } // тренировка не загрузилась: не мешаем пройти тест
+  state.practiceOrder = shuffle(state.practiceSet);
+  state.practiceIndex = 0;
+  state.practiceCorrect = 0;
+  state.practiceOrder.forEach((item) => { const i = new Image(); i.src = item.file; });
+  show("practice");
+  showPracticeImage();
+});
+
+function showPracticeImage() {
+  const item = state.practiceOrder[state.practiceIndex];
+  $("[data-practice-current]").textContent = state.practiceIndex + 1;
+  $("[data-practice-progress]").style.width = (state.practiceIndex / state.practiceOrder.length) * 100 + "%";
+  practiceFeedback.hidden = true;
+  practiceDone.hidden = true;
+  practiceAnswers.hidden = false;
+  practiceButtons.forEach((b) => (b.disabled = true));
+  practiceImg.classList.add("is-loading");
+  practiceImg.onload = () => {
+    practiceImg.classList.remove("is-loading");
+    practiceButtons.forEach((b) => (b.disabled = false));
+  };
+  practiceImg.src = item.file;
+}
+
+function practiceAnswer(value) {
+  if (practiceButtons[0].disabled || !practiceFeedback.hidden) return;
+  const item = state.practiceOrder[state.practiceIndex];
+  const ok = value === item.label;
+  if (ok) state.practiceCorrect++;
+  practiceButtons.forEach((b) => (b.disabled = true));
+  $("[data-practice-verdict]").textContent = ok
+    ? `Верно: ${LABEL[item.label]}`
+    : `Ошибка. На самом деле: ${LABEL[item.label]}`;
+  $("[data-practice-hint]").textContent = item.hint;
+  const last = state.practiceIndex === state.practiceOrder.length - 1;
+  const next = $('[data-action="practice-next"]');
+  next.textContent = last ? "Закончить тренировку" : "Дальше";
+  practiceFeedback.hidden = false;
+  next.focus({ preventScroll: true });
+}
+
+$('[data-action="practice-next"]').addEventListener("click", () => {
+  state.practiceIndex++;
+  if (state.practiceIndex < state.practiceOrder.length) { showPracticeImage(); return; }
+  $("[data-practice-progress]").style.width = "100%";
+  practiceFeedback.hidden = true;
+  practiceAnswers.hidden = true;
+  $("[data-practice-summary]").textContent =
+    `Тренировка: верно ${state.practiceCorrect} из ${state.practiceOrder.length}`;
+  practiceDone.hidden = false;
+  $('[data-practice-done] [data-action="start-test"]').focus({ preventScroll: true });
+});
+
+practiceButtons.forEach((b) => b.addEventListener("click", () => practiceAnswer(b.dataset.practiceAnswer)));
 
 // ---------------------------------------------------------------------
 // Тест
@@ -134,7 +212,7 @@ function newId() {
   return "p-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
-$('[data-action="start-test"]').addEventListener("click", () => {
+function startTest() {
   state.order = shuffle(state.testSet);
   state.index = 0;
   state.answers = [];
@@ -143,7 +221,8 @@ $('[data-action="start-test"]').addEventListener("click", () => {
   state.order.forEach((item) => { const i = new Image(); i.src = item.file; }); // заранее загружаем все снимки
   show("test");
   showImage();
-});
+}
+$('[data-action="start-test"]').addEventListener("click", startTest);
 
 const testImg = $("[data-test-image]");
 const answerButtons = $$("[data-answer]");
@@ -186,10 +265,13 @@ function answer(value) {
 
 answerButtons.forEach((b) => b.addEventListener("click", () => answer(b.dataset.answer)));
 document.addEventListener("keydown", (e) => {
-  if ($('.screen[data-screen="test"]').hidden) return;
   if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return; // зажатая клавиша не должна отвечать на несколько снимков
-  if (e.key === "1") answer("normal");
-  if (e.key === "2") answer("pneumonia");
+  const testing = !$('.screen[data-screen="test"]').hidden;
+  const practising = !$('.screen[data-screen="practice"]').hidden;
+  if (!testing && !practising) return;
+  const value = e.key === "1" ? "normal" : e.key === "2" ? "pneumonia" : null;
+  if (!value) return;
+  if (testing) answer(value); else practiceAnswer(value);
 });
 
 // ---------------------------------------------------------------------
@@ -213,6 +295,12 @@ function resetResultScreen() {
   $("[data-ai-score]").textContent = "–";
   $("[data-ai-status]").textContent = "проверяет снимки…";
   $$("[data-stat]").forEach((el) => (el.textContent = "–"));
+  $("[data-review-human]").textContent = "–";
+  $("[data-review-ai]").textContent = "–";
+  $$('[name="trustAfter"]').forEach((r) => (r.checked = false));
+  $("[data-trust-status]").textContent = "";
+  $("[data-trust-status]").classList.remove("is-error");
+  state.trustAfter = "";
   const status = $("[data-save-status]");
   status.textContent = "";
   status.classList.remove("is-error");
@@ -251,21 +339,21 @@ async function finishTest() {
   $("[data-human-score]").textContent = humanCorrect;
   $("[data-human-time]").textContent = fmtSec(humanAvg);
 
-  // Карточки разбора: сначала без ответа нейросети
+  // Таблица разбора: строка = снимок, рядом ответ человека и ответ нейросети. Сначала без ответа нейросети
   const list = $("[data-review]");
   list.innerHTML = "";
   answers.forEach((a, i) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <img src="images/test/${a.image}" alt="Снимок ${i + 1}">
-      <div>
-        <p class="truth">${i + 1}. На самом деле: ${LABEL[a.truth]}</p>
-        <p>Вы: ${LABEL[a.human]} ${mark(a.human === a.truth)}</p>
-        <p data-ai-row>ИИ: …</p>
-      </div>`;
-    if (a.truth === "pneumonia" && a.human === "normal") li.classList.add("is-missed");
-    list.appendChild(li);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <th scope="row" class="review__shot">
+        <img src="images/test/${a.image}" alt="Снимок ${i + 1}">
+        <span><span class="review__num">${i + 1}.</span> ${LABEL[a.truth]}</span>
+      </th>
+      <td class="${cellClass(a.human, a.truth)}">${LABEL[a.human]} ${mark(a.human === a.truth)}</td>
+      <td data-ai-cell>…</td>`;
+    list.appendChild(tr);
   });
+  $("[data-review-human]").textContent = `${humanCorrect} из ${answers.length}`;
 
   // Нейросеть проходит те же снимки, в том же порядке. Считаем сразу все, без пауз,
   // чтобы ответы можно было отправить, не дожидаясь анимации.
@@ -284,9 +372,10 @@ async function finishTest() {
   } catch (err) {
     console.error(err);
     $("[data-ai-status]").textContent = "не загрузилась. Обновите страницу.";
+    $$("[data-ai-cell]").forEach((cell) => (cell.textContent = "нет ответа"));
   }
 
-  saveResults(); // сразу, пока участник не закрыл вкладку
+  state.savePromise = saveResults(); // сразу, пока участник не закрыл вкладку
 
   // Показываем, как ИИ «идёт» по снимкам
   if (aiOk) {
@@ -295,12 +384,14 @@ async function finishTest() {
       const a = answers[i];
       items[i].classList.add("is-scanning");
       const conf = Math.round((a.ai === "pneumonia" ? a.aiPneumonia : 1 - a.aiPneumonia) * 100);
-      items[i].querySelector("[data-ai-row]").innerHTML =
-        `ИИ: ${LABEL[a.ai]} (уверен на ${conf}%) ${mark(a.ai === a.truth)}`;
+      const cell = items[i].querySelector("[data-ai-cell]");
+      cell.className = cellClass(a.ai, a.truth);
+      cell.innerHTML = `${LABEL[a.ai]} ${mark(a.ai === a.truth)} <small class="review__conf">${conf}%</small>`;
       $("[data-ai-score]").textContent = answers.slice(0, i + 1).filter((x) => x.ai === x.truth).length;
       await wait(60); // небольшая пауза, чтобы было видно, как ИИ идёт по снимкам
       items[i].classList.remove("is-scanning");
     }
+    $("[data-review-ai]").textContent = `${answers.filter((x) => x.ai === x.truth).length} из ${answers.length}`;
     const aiAvgMs = answers.reduce((s, a) => s + a.aiMs, 0) / answers.length;
     $("[data-ai-status]").textContent = `в среднем ${fmtSec(aiAvgMs / 1000)} на снимок`;
   }
@@ -315,6 +406,12 @@ async function finishTest() {
   }
   $("[data-verdict]").textContent = verdict;
   showStats(answers, aiOk);
+}
+
+// Цвет ячейки разбора: верно, ошибка, или пропущенная пневмония (самая опасная ошибка)
+function cellClass(given, truth) {
+  if (given === truth) return "is-right";
+  return truth === "pneumonia" ? "is-wrong is-missed" : "is-wrong";
 }
 
 function mark(ok) {
@@ -360,7 +457,11 @@ async function saveResults() {
     participant: state.participant,
     attempt: state.attempt,
     group: state.survey.group,
+    age: state.survey.age,
     medical: state.survey.medical,
+    trustBefore: state.survey.trustBefore,
+    practiceCorrect: state.practiceSet.length ? state.practiceCorrect : "",
+    testVersion: CONFIG.TEST_VERSION,
     device: /Mobi|Android/i.test(navigator.userAgent) ? "phone" : "computer",
     startedAt: state.startedAt,
     modelVersion: CONFIG.MODEL_VERSION,
@@ -397,6 +498,38 @@ async function saveResults() {
     state.saving = false;
   }
 }
+
+// Ответ «а после теста?»: отправляем отдельным запросом, основной результат уже ушёл (или уходит)
+async function saveTrustAfter() {
+  const status = $("[data-trust-status]");
+  status.classList.remove("is-error");
+  if (!CONFIG.SHEET_URL) {
+    console.info("SHEET_URL не задан, ответ не отправлен:", state.trustAfter);
+    status.textContent = "Режим проверки: ответ не сохраняется.";
+    return;
+  }
+  status.textContent = "Записываем ответ…";
+  state.saving = true;
+  try {
+    await state.savePromise; // строки участника должны уже лежать в таблице
+    await sendPayload({ type: "trustAfter", participant: state.participant, trustAfter: state.trustAfter });
+    status.textContent = "Ответ записан, спасибо!";
+  } catch (err) {
+    console.error(err);
+    status.classList.add("is-error");
+    status.innerHTML = 'Не получилось записать ответ. <button class="btn btn--ghost" type="button">Попробовать ещё раз</button>';
+    status.querySelector("button").addEventListener("click", saveTrustAfter, { once: true });
+  } finally {
+    state.saving = false;
+  }
+}
+
+$$('[name="trustAfter"]').forEach((input) =>
+  input.addEventListener("change", () => {
+    state.trustAfter = input.value;
+    saveTrustAfter();
+  })
+);
 
 // Не даём случайно закрыть вкладку посреди теста или пока уходит результат
 window.addEventListener("beforeunload", (e) => {
@@ -468,4 +601,5 @@ loadTestSet().catch((err) => {
   $("[data-demo-note]").hidden = false;
   $("[data-demo-note]").textContent = "Не удалось загрузить снимки. Обновите страницу.";
 });
+loadPracticeSet().catch((err) => console.error("Тренировка не загрузилась:", err));
 loadModel().catch((err) => console.error("Модель не загрузилась:", err));

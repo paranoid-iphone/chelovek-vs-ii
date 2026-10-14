@@ -131,7 +131,27 @@ kbd { font: 400 .75rem/1 var(--font); color: var(--muted); border: 1px solid var
 
 /* ---------- Мини-обучение ---------- */
 .pair { display: grid; gap: 16px; margin: 8px 0 20px; }
-@media (min-width: 36rem) { .pair { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 36rem) { .pair { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); } }
+.screen[data-screen="learn"] { max-width: 52rem; }
+.screen[data-screen="learn"] h3 { margin-top: 1.4em; }
+.anatomy { display: grid; gap: 16px; align-items: start; margin-bottom: 8px; }
+@media (min-width: 42rem) { .anatomy { grid-template-columns: minmax(16rem, 22rem) 1fr; gap: 28px; } }
+.lightbox__screen { position: relative; }
+.pin {
+  position: absolute; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%;
+  background: #F2C14E; color: #15222D; font: 600 .8rem/24px var(--font); text-align: center;
+  box-shadow: 0 0 0 2px #15222D;
+}
+.legend { margin: 0; padding-left: 1.3em; display: grid; gap: .5em; }
+.legend li::marker { font-weight: 600; }
+.signs { margin: 0 0 1em; padding-left: 1.2em; display: grid; gap: .5em; max-width: 40em; }
+
+/* ---------- Тренировка ---------- */
+.feedback { background: var(--surface); border-radius: var(--radius); padding: 14px 16px 16px; border-left: 6px solid var(--ai); }
+.feedback[hidden] { display: none; }
+.feedback p { margin-bottom: .7em; }
+.feedback__verdict { font-weight: 600; font-size: 1.1rem; }
+.feedback .btn { width: 100%; }
 
 /* ---------- Тест ---------- */
 .progress { margin-bottom: 14px; }
@@ -166,19 +186,46 @@ kbd { font: 400 .75rem/1 var(--font); color: var(--muted); border: 1px solid var
 .save-status { font-size: .95rem; color: var(--muted); }
 .save-status.is-error { color: var(--bad); }
 
-.review { list-style: none; padding: 0; margin: 12px 0 28px; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
-.review li {
-  background: var(--surface); border-radius: 10px; padding: 8px; font-size: .92rem; line-height: 1.35;
-  border: 2px solid transparent; display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center;
+/* Разбор: строка = снимок, рядом ответ человека и ответ нейросети */
+.review { border-collapse: separate; border-spacing: 0 6px; width: 100%; max-width: 44rem; margin: 6px 0 28px; font-size: .95rem; line-height: 1.3; }
+.review { table-layout: fixed; } /* колонки делят ширину поровну-ish и не раздвигают страницу на телефоне */
+.review col.review__col-shot { width: 40%; }
+.review th, .review td { overflow-wrap: break-word; }
+@media (max-width: 30rem) {
+  .review col.review__col-shot { width: 32%; }
+  .review { font-size: .84rem; }
+  .review th, .review td { padding: 6px 7px; }
+  .review__shot { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .review__shot img { width: 38px; height: 38px; }
 }
-.review li.is-missed { border-color: var(--bad); }
-.review li.is-scanning { border-color: var(--ai); }
-.review img { border-radius: 6px; background: #000; aspect-ratio: 1 / 1; object-fit: cover; width: 76px; }
-.review p { margin: 0; }
-.review .truth { font-weight: 600; margin-bottom: 2px; }
+.review thead th { text-align: left; font-weight: 600; padding: 4px 10px; }
+.review thead th:nth-child(2) { color: var(--human); }
+.review thead th:nth-child(3) { color: var(--ai); }
+.review th, .review td { background: var(--surface); padding: 6px 10px; text-align: left; vertical-align: middle; border: 2px solid transparent; }
+.review thead th { background: none; border: 0; }
+.review tbody th, .review tbody td { border-left: 0; border-right: 0; }
+.review tbody th:first-child, .review tbody td:first-child { border-left: 2px solid transparent; border-radius: 10px 0 0 10px; }
+.review tbody td:last-child, .review tfoot td:last-child { border-right: 2px solid transparent; border-radius: 0 10px 10px 0; }
+.review__shot { font-weight: 400; display: flex; align-items: center; gap: 10px; width: 100%; }
+.review__shot img { width: 52px; height: 52px; border-radius: 6px; background: #000; object-fit: cover; flex: none; }
+.review__num { font-weight: 600; font-variant-numeric: tabular-nums; }
+.review__conf { color: var(--muted); font-size: .8rem; margin-left: 2px; }
+.review td.is-wrong { background: color-mix(in srgb, var(--bad) 12%, var(--surface)); }
+.review td.is-missed { border-color: var(--bad); border-left-width: 2px; border-right-width: 2px; border-radius: 10px; }
+.review tr.is-scanning > td[data-ai-cell], .review tr.is-scanning > th { border-color: var(--ai); }
 .review .yes { color: var(--ok); font-weight: 600; }
 .review .no { color: var(--bad); font-weight: 600; }
+.review tfoot th, .review tfoot td { font-weight: 600; font-variant-numeric: tabular-nums; border-radius: 10px; }
+.review tfoot th { font-weight: 600; }
+.review tfoot td:nth-child(2) { color: var(--human); }
+.review tfoot td:nth-child(3) { color: var(--ai); }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ---------- Доверие после теста ---------- */
+.trust { margin: 8px 0 12px; padding: 4px 16px 6px; background: var(--surface); border-radius: var(--radius); max-width: 38em; }
+.trust h3 { margin-top: 12px; font-size: 1.1rem; }
+.trust .choice { margin-bottom: 8px; }
+.trust .save-status { margin: 0 0 10px; min-height: 1.5em; }
 
 /* ---------- Как это работает ---------- */
 .screen--article h3:first-of-type { margin-top: .6em; }

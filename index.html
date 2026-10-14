@@ -36,7 +36,7 @@
         <div class="hero__text">
           <h1 id="home-title">Кто точнее найдёт пневмонию на рентгене: вы или нейросеть?</h1>
           <p class="lead">Посмотрите на <span data-total>20</span> снимков и для каждого решите, здоров человек или болен. В конце узнаете, сколько угадали вы и сколько — искусственный интеллект.</p>
-          <p class="meta">Около 3 минут. Анонимно, без имени и регистрации.</p>
+          <p class="meta">Около 5 минут. Анонимно, без имени и регистрации.</p>
           <button class="btn btn--primary" type="button" data-go="survey">Начать тест</button>
           <p class="demo-note" hidden data-demo-note>Сейчас на сайте демонстрационные снимки и модель. Настоящие появятся после обучения нейросети.</p>
         </div>
@@ -45,7 +45,7 @@
 
     <!-- 2. Анкета -->
     <section class="screen" data-screen="survey" aria-labelledby="survey-title" hidden>
-      <h2 id="survey-title">Два вопроса перед началом</h2>
+      <h2 id="survey-title">Четыре вопроса перед началом</h2>
       <p class="lead">Они нужны, чтобы сравнить результаты разных групп людей. Имя мы не спрашиваем.</p>
 
       <fieldset class="choice" data-field="group">
@@ -55,6 +55,15 @@
         <label><input type="radio" name="group" value="adult"><span>Взрослый</span></label>
       </fieldset>
 
+      <fieldset class="choice" data-field="age">
+        <legend>Сколько вам лет?</legend>
+        <label><input type="radio" name="age" value="u14"><span>до 14</span></label>
+        <label><input type="radio" name="age" value="14-17"><span>14–17</span></label>
+        <label><input type="radio" name="age" value="18-24"><span>18–24</span></label>
+        <label><input type="radio" name="age" value="25-44"><span>25–44</span></label>
+        <label><input type="radio" name="age" value="45plus"><span>45 и старше</span></label>
+      </fieldset>
+
       <fieldset class="choice" data-field="medical">
         <legend>Есть ли у вас медицинское образование?</legend>
         <label><input type="radio" name="medical" value="no"><span>Нет</span></label>
@@ -62,27 +71,103 @@
         <label><input type="radio" name="medical" value="yes"><span>Да, я медик</span></label>
       </fieldset>
 
+      <fieldset class="choice" data-field="trustBefore">
+        <legend>Доверили бы вы нейросети первую проверку своего рентгена, если врач потом всё равно посмотрит снимок?</legend>
+        <label><input type="radio" name="trustBefore" value="yes"><span>Да</span></label>
+        <label><input type="radio" name="trustBefore" value="rather-yes"><span>Скорее да</span></label>
+        <label><input type="radio" name="trustBefore" value="rather-no"><span>Скорее нет</span></label>
+        <label><input type="radio" name="trustBefore" value="no"><span>Нет</span></label>
+      </fieldset>
+
       <button class="btn btn--primary" type="button" data-action="survey-next" disabled>Дальше</button>
     </section>
 
     <!-- 3. Мини-обучение -->
     <section class="screen" data-screen="learn" aria-labelledby="learn-title" hidden>
-      <h2 id="learn-title">Как выглядит пневмония на снимке</h2>
-      <p class="lead">Нейросеть училась на 2000 подписанных снимков. Вам придётся научиться на двух.</p>
+      <h2 id="learn-title">Как найти пневмонию на снимке</h2>
+      <p class="lead">Нейросеть училась на тысячах подписанных снимков. Вам нужно немного: сначала признаки, потом тренировка на четырёх снимках с ответами сразу.</p>
+
+      <h3>Куда смотреть</h3>
+      <div class="anatomy">
+        <figure class="lightbox">
+          <div class="lightbox__clip" aria-hidden="true"></div>
+          <div class="lightbox__screen">
+            <img src="images/examples/learn-normal-1.jpg" alt="Здоровая грудная клетка с отмеченными частями">
+            <span class="pin" style="left:30%;top:52%" aria-hidden="true">1</span>
+            <span class="pin" style="left:78%;top:55%" aria-hidden="true">1</span>
+            <span class="pin" style="left:67%;top:62%" aria-hidden="true">2</span>
+            <span class="pin" style="left:51%;top:50%" aria-hidden="true">3</span>
+            <span class="pin" style="left:14%;top:62%" aria-hidden="true">4</span>
+            <span class="pin" style="left:30%;top:82%" aria-hidden="true">5</span>
+          </div>
+        </figure>
+        <ol class="legend">
+          <li><strong>Лёгкие.</strong> Две тёмные области: в них воздух. Пневмонию ищем именно здесь.</li>
+          <li><strong>Сердце.</strong> Светлая тень справа от позвоночника на снимке. Она не болезнь.</li>
+          <li><strong>Позвоночник.</strong> Светлая полоса посередине.</li>
+          <li><strong>Рёбра.</strong> Светлые дуги поверх лёгких. Они не болезнь.</li>
+          <li><strong>Диафрагма.</strong> Граница лёгких снизу. У здорового человека она чёткая.</li>
+        </ol>
+      </div>
+      <p class="meta">Левое и правое на снимке перевёрнуты: левая сторона картинки — правое лёгкое человека. Нам это не мешает, важно сравнивать две стороны между собой.</p>
+
+      <h3>Признаки</h3>
+      <ul class="signs">
+        <li><strong>Здоров:</strong> оба лёгких тёмные и прозрачные, сквозь них видны тонкие сосуды, края сердца и диафрагмы чёткие.</li>
+        <li><strong>Пневмония:</strong> в лёгком есть белёсое «облако» или пятно, будто его заволокло дымкой. Чаще оно внизу или рядом с сердцем.</li>
+        <li><strong>Сравните стороны.</strong> Если одно лёгкое заметно светлее другого, это повод насторожиться.</li>
+        <li><strong>Размытый край.</strong> Рядом с очагом граница сердца или диафрагмы теряет чёткость.</li>
+        <li><strong>Не путайте</strong> болезнь с рёбрами, ключицами, трубками и датчиками: они тоже светлые, но это не лёгкие.</li>
+      </ul>
+
+      <h3>Пример: здоров и пневмония</h3>
       <div class="pair">
         <figure class="lightbox">
           <div class="lightbox__clip" aria-hidden="true"></div>
-          <div class="lightbox__screen"><img src="images/examples/normal.jpg" alt="Пример: здоровые лёгкие"></div>
-          <figcaption class="lightbox__label"><strong>Здоров.</strong> Лёгкие тёмные: в них воздух, а воздух почти не задерживает рентгеновские лучи.</figcaption>
+          <div class="lightbox__screen"><img src="images/examples/learn-normal-2.jpg" alt="Пример: здоровые лёгкие"></div>
+          <figcaption class="lightbox__label"><strong>Здоров.</strong> Лёгкие тёмные с обеих сторон, граница диафрагмы чёткая.</figcaption>
         </figure>
         <figure class="lightbox">
           <div class="lightbox__clip" aria-hidden="true"></div>
-          <div class="lightbox__screen"><img src="images/examples/pneumonia.jpg" alt="Пример: пневмония"></div>
-          <figcaption class="lightbox__label"><strong>Пневмония.</strong> В лёгких появляются белые мутные пятна: там воспаление и жидкость.</figcaption>
+          <div class="lightbox__screen"><img src="images/examples/learn-pneumonia-1.jpg" alt="Пример: пневмония в одном лёгком"></div>
+          <figcaption class="lightbox__label"><strong>Пневмония.</strong> Одно лёгкое светлое и мутное, второе тёмное. Разница сторон видна сразу.</figcaption>
+        </figure>
+        <figure class="lightbox">
+          <div class="lightbox__clip" aria-hidden="true"></div>
+          <div class="lightbox__screen"><img src="images/examples/learn-pneumonia-2.jpg" alt="Пример: пневмония с трубками и датчиками на снимке"></div>
+          <figcaption class="lightbox__label"><strong>Пневмония.</strong> Белёсое затемнение слева на снимке. Тонкие линии и датчики поверх снимка к лёгким не относятся.</figcaption>
         </figure>
       </div>
-      <p class="meta">Снимки будут идти по одному. Правильные ответы вы увидите в конце.</p>
-      <button class="btn btn--primary" type="button" data-action="start-test">Начать: <span data-total>20</span> снимков</button>
+      <p class="meta">Честно: бывают и слабые случаи, где очаг почти не виден. Их пропускают и врачи. Если сомневаетесь, выбирайте то, что кажется вероятнее.</p>
+      <button class="btn btn--primary" type="button" data-action="start-practice">Потренироваться: <span data-practice-total>4</span> снимка</button>
+    </section>
+
+    <!-- 3б. Тренировка с ответом сразу -->
+    <section class="screen screen--test" data-screen="practice" aria-labelledby="practice-title" hidden>
+      <div class="progress">
+        <h2 id="practice-title" class="progress__label" aria-live="polite">Тренировка: снимок <span data-practice-current>1</span> из <span data-practice-total>4</span></h2>
+        <div class="progress__bar" aria-hidden="true"><div class="progress__fill" data-practice-progress></div></div>
+      </div>
+      <figure class="lightbox lightbox--test">
+        <div class="lightbox__clip" aria-hidden="true"></div>
+        <div class="lightbox__screen">
+          <img data-practice-image alt="Тренировочный рентгеновский снимок">
+        </div>
+      </figure>
+      <div class="answers" role="group" aria-label="Ваш ответ в тренировке" data-practice-answers>
+        <button class="btn btn--answer" type="button" data-practice-answer="normal">Здоров <kbd>1</kbd></button>
+        <button class="btn btn--answer" type="button" data-practice-answer="pneumonia">Пневмония <kbd>2</kbd></button>
+      </div>
+      <div class="feedback" data-practice-feedback role="status" hidden>
+        <p class="feedback__verdict" data-practice-verdict></p>
+        <p data-practice-hint></p>
+        <button class="btn btn--primary" type="button" data-action="practice-next">Дальше</button>
+      </div>
+      <div class="feedback" data-practice-done hidden>
+        <p class="feedback__verdict" data-practice-summary></p>
+        <p>Теперь настоящий тест. Правильные ответы покажем только в конце.</p>
+        <button class="btn btn--primary" type="button" data-action="start-test">Начать: <span data-total>20</span> снимков</button>
+      </div>
     </section>
 
     <!-- 4. Тест -->
@@ -135,9 +220,30 @@
       </table>
       <p class="save-status" data-save-status role="status"></p>
 
+      <section class="trust" data-trust aria-labelledby="trust-title">
+        <h3 id="trust-title">Изменилось ли ваше мнение?</h3>
+        <fieldset class="choice" data-field="trustAfter">
+          <legend>Доверили бы вы нейросети первую проверку своего рентгена, если врач потом всё равно посмотрит снимок?</legend>
+          <label><input type="radio" name="trustAfter" value="yes"><span>Да</span></label>
+          <label><input type="radio" name="trustAfter" value="rather-yes"><span>Скорее да</span></label>
+          <label><input type="radio" name="trustAfter" value="rather-no"><span>Скорее нет</span></label>
+          <label><input type="radio" name="trustAfter" value="no"><span>Нет</span></label>
+        </fieldset>
+        <p class="save-status" data-trust-status role="status"></p>
+      </section>
+
       <h3>Разбор по снимкам</h3>
-      <p class="meta">Пропустить болезнь опаснее, чем перестраховаться, поэтому такие ошибки выделены.</p>
-      <ol class="review" data-review></ol>
+      <p class="meta">Пропустить болезнь опаснее, чем перестраховаться, поэтому такие ошибки выделены красной рамкой.</p>
+      <table class="review" data-review-table>
+        <colgroup><col class="review__col-shot"><col><col></colgroup>
+        <thead>
+          <tr><th scope="col">Снимок</th><th scope="col">Вы</th><th scope="col">Нейросеть</th></tr>
+        </thead>
+        <tbody data-review></tbody>
+        <tfoot>
+          <tr><th scope="row">Верно</th><td data-review-human>–</td><td data-review-ai>–</td></tr>
+        </tfoot>
+      </table>
 
       <div class="actions">
         <button class="btn btn--primary" type="button" data-action="share">Отправить тест другу</button>
@@ -150,8 +256,8 @@
       <h2 id="about-title">Как это работает</h2>
 
       <h3>Как учится нейросеть</h3>
-      <p>Нейросеть — программа, которая учится на примерах, а не по правилам. Ей не объясняли, как выглядит пневмония. Ей показали 2000 рентгеновских снимков с подписями «здоров» и «пневмония», и она сама нашла, чем они отличаются.</p>
-      <p>Мы взяли готовую нейросеть, которая уже умеет различать обычные картинки, и доучили её на рентгенах в сервисе Google Teachable Machine.</p>
+      <p>Нейросеть — программа, которая учится на примерах, а не по правилам. Ей не объясняли, как выглядит пневмония. Ей показали больше пяти тысяч рентгеновских снимков с подписями «здоров» и «пневмония», и она сама нашла, чем они отличаются.</p>
+      <p>Мы взяли готовую нейросеть MobileNetV2, которая уже умеет различать обычные картинки, и доучили её на рентгенах в Google Colab.</p>
 
       <h3>Почему тест честный</h3>
       <p>20 снимков из теста нейросеть ни разу не видела во время обучения. Она отвечает на них впервые, как и вы.</p>
