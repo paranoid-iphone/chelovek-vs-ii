@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Человек против ИИ: найди пневмонию на рентгене</title>
+  <meta name="description" content="Тест из 20 рентгеновских снимков: сравните, кто точнее находит пневмонию — вы или нейросеть. Учебный проект.">
+  <meta name="theme-color" content="#1C2A36">
+  <!-- Превью ссылки в мессенджерах (нужен абсолютный адрес; если репозиторий назовёте иначе, поправьте путь) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Человек против ИИ: найди пневмонию на рентгене">
+  <meta property="og:description" content="Тест из 20 рентгеновских снимков: кто точнее находит пневмонию — вы или нейросеть?">
+  <meta property="og:image" content="https://paranoid-iphone.github.io/chelovek-vs-ii/images/og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231C2A36'/%3E%3Cellipse cx='11' cy='17' rx='5' ry='9' fill='%23F3F8FB'/%3E%3Cellipse cx='21' cy='17' rx='5' ry='9' fill='%23F3F8FB'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="brand" type="button" data-go="home">Человек против ИИ</button>
+    <button class="toplink" type="button" data-go="about">Как это работает</button>
+  </header>
+
+  <main id="app">
+
+    <!-- 1. Главная -->
+    <section class="screen" data-screen="home" aria-labelledby="home-title">
+      <div class="hero">
+        <figure class="lightbox lightbox--hero">
+          <div class="lightbox__clip" aria-hidden="true"></div>
+          <div class="lightbox__screen">
+            <img src="images/examples/pneumonia.jpg" alt="Рентгеновский снимок грудной клетки">
+          </div>
+          <figcaption class="lightbox__label">Рентген грудной клетки. Есть ли здесь пневмония?</figcaption>
+        </figure>
+        <div class="hero__text">
+          <h1 id="home-title">Кто точнее найдёт пневмонию на рентгене: вы или нейросеть?</h1>
+          <p class="lead">Посмотрите на <span data-total>20</span> снимков и для каждого решите, здоров человек или болен. В конце узнаете, сколько угадали вы и сколько — искусственный интеллект.</p>
+          <p class="meta">Около 3 минут. Анонимно, без имени и регистрации.</p>
+          <button class="btn btn--primary" type="button" data-go="survey">Начать тест</button>
+          <p class="demo-note" hidden data-demo-note>Сейчас на сайте демонстрационные снимки и модель. Настоящие появятся после обучения нейросети.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Анкета -->
+    <section class="screen" data-screen="survey" aria-labelledby="survey-title" hidden>
+      <h2 id="survey-title">Два вопроса перед началом</h2>
+      <p class="lead">Они нужны, чтобы сравнить результаты разных групп людей. Имя мы не спрашиваем.</p>
+
+      <fieldset class="choice" data-field="group">
+        <legend>Кто вы?</legend>
+        <label><input type="radio" name="group" value="school"><span>Школьник</span></label>
+        <label><input type="radio" name="group" value="student"><span>Студент</span></label>
+        <label><input type="radio" name="group" value="adult"><span>Взрослый</span></label>
+      </fieldset>
+
+      <fieldset class="choice" data-field="medical">
+        <legend>Есть ли у вас медицинское образование?</legend>
+        <label><input type="radio" name="medical" value="no"><span>Нет</span></label>
+        <label><input type="radio" name="medical" value="studying"><span>Учусь на медика</span></label>
+        <label><input type="radio" name="medical" value="yes"><span>Да, я медик</span></label>
+      </fieldset>
+
+      <button class="btn btn--primary" type="button" data-action="survey-next" disabled>Дальше</button>
+    </section>
+
+    <!-- 3. Мини-обучение -->
+    <section class="screen" data-screen="learn" aria-labelledby="learn-title" hidden>
+      <h2 id="learn-title">Как выглядит пневмония на снимке</h2>
+      <p class="lead">Нейросеть училась на 2000 подписанных снимков. Вам придётся научиться на двух.</p>
+      <div class="pair">
+        <figure class="lightbox">
+          <div class="lightbox__clip" aria-hidden="true"></div>
+          <div class="lightbox__screen"><img src="images/examples/normal.jpg" alt="Пример: здоровые лёгкие"></div>
+          <figcaption class="lightbox__label"><strong>Здоров.</strong> Лёгкие тёмные: в них воздух, а воздух почти не задерживает рентгеновские лучи.</figcaption>
+        </figure>
+        <figure class="lightbox">
+          <div class="lightbox__clip" aria-hidden="true"></div>
+          <div class="lightbox__screen"><img src="images/examples/pneumonia.jpg" alt="Пример: пневмония"></div>
+          <figcaption class="lightbox__label"><strong>Пневмония.</strong> В лёгких появляются белые мутные пятна: там воспаление и жидкость.</figcaption>
+        </figure>
+      </div>
+      <p class="meta">Снимки будут идти по одному. Правильные ответы вы увидите в конце.</p>
+      <button class="btn btn--primary" type="button" data-action="start-test">Начать: <span data-total>20</span> снимков</button>
+    </section>
+
+    <!-- 4. Тест -->
+    <section class="screen screen--test" data-screen="test" aria-labelledby="test-title" hidden>
+      <div class="progress">
+        <h2 id="test-title" class="progress__label" aria-live="polite">Снимок <span data-current>1</span> из <span data-total>20</span></h2>
+        <div class="progress__bar" aria-hidden="true"><div class="progress__fill" data-progress></div></div>
+      </div>
+      <figure class="lightbox lightbox--test">
+        <div class="lightbox__clip" aria-hidden="true"></div>
+        <div class="lightbox__screen">
+          <img data-test-image alt="Рентгеновский снимок для теста">
+        </div>
+      </figure>
+      <p class="image-error" data-image-error role="alert" hidden>
+        Снимок не загрузился. Проверьте интернет.
+        <button class="btn btn--ghost" type="button" data-action="retry-image">Загрузить ещё раз</button>
+      </p>
+      <div class="answers" role="group" aria-label="Ваш ответ">
+        <button class="btn btn--answer" type="button" data-answer="normal">Здоров <kbd>1</kbd></button>
+        <button class="btn btn--answer" type="button" data-answer="pneumonia">Пневмония <kbd>2</kbd></button>
+      </div>
+    </section>
+
+    <!-- 5. Результат -->
+    <section class="screen" data-screen="result" aria-labelledby="result-title" hidden>
+      <h2 id="result-title" data-verdict>Считаем результат…</h2>
+
+      <div class="duel" data-duel>
+        <div class="duel__side duel__side--human">
+          <p class="duel__who">Вы</p>
+          <p class="duel__score"><span data-human-score>–</span><small> из <span data-total>20</span></small></p>
+          <p class="duel__time">в среднем <span data-human-time>–</span> на снимок</p>
+        </div>
+        <div class="duel__side duel__side--ai">
+          <p class="duel__who">Нейросеть</p>
+          <p class="duel__score"><span data-ai-score>–</span><small> из <span data-total>20</span></small></p>
+          <p class="duel__time" data-ai-status>проверяет снимки…</p>
+        </div>
+      </div>
+
+      <table class="stats">
+        <thead>
+          <tr><th scope="col"><span class="sr-only">Показатель</span></th><th scope="col">Вы</th><th scope="col">Нейросеть</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Нашли пневмоний</th><td data-stat="human-found">–</td><td data-stat="ai-found">–</td></tr>
+          <tr><th scope="row">Ложных тревог (здоровых назвали больными)</th><td data-stat="human-false">–</td><td data-stat="ai-false">–</td></tr>
+        </tbody>
+      </table>
+      <p class="save-status" data-save-status role="status"></p>
+
+      <h3>Разбор по снимкам</h3>
+      <p class="meta">Пропустить болезнь опаснее, чем перестраховаться, поэтому такие ошибки выделены.</p>
+      <ol class="review" data-review></ol>
+
+      <div class="actions">
+        <button class="btn btn--primary" type="button" data-action="share">Отправить тест другу</button>
+        <button class="btn btn--ghost" type="button" data-go="about">Как работает нейросеть</button>
+      </div>
+    </section>
+
+    <!-- 6. Как это работает -->
+    <section class="screen screen--article" data-screen="about" aria-labelledby="about-title" hidden>
+      <h2 id="about-title">Как это работает</h2>
+
+      <h3>Как учится нейросеть</h3>
+      <p>Нейросеть — программа, которая учится на примерах, а не по правилам. Ей не объясняли, как выглядит пневмония. Ей показали 2000 рентгеновских снимков с подписями «здоров» и «пневмония», и она сама нашла, чем они отличаются.</p>
+      <p>Мы взяли готовую нейросеть, которая уже умеет различать обычные картинки, и доучили её на рентгенах в сервисе Google Teachable Machine.</p>
+
+      <h3>Почему тест честный</h3>
+      <p>20 снимков из теста нейросеть ни разу не видела во время обучения. Она отвечает на них впервые, как и вы.</p>
+      <p>Снимки взяты из открытой научной базы, которую врачи собрали специально для обучения ИИ. Это снимки детей, данные обезличены.</p>
+
+      <h3>Где ИИ уже помогает врачам</h3>
+      <p>В Москве нейросети помогают врачам проверять флюорографию, рентген, компьютерную томографию и маммографию. Через городскую платформу проходит около миллиона снимков в месяц (<a href="https://www.mos.ru/news/item/166355073" target="_blank" rel="noopener">mos.ru, 2026</a>).</p>
+      <p>ИИ не ставит диагноз сам. Он подсказывает врачу, на какой снимок посмотреть внимательнее, а решение принимает врач.</p>
+
+      <h3>Проверьте нейросеть сами</h3>
+      <p>Загрузите рентген грудной клетки, и нейросеть скажет, что она на нём видит. Снимок никуда не отправляется: всё считается прямо в вашем браузере.</p>
+      <div class="tryit">
+        <label class="btn btn--ghost tryit__pick">
+          <input type="file" accept="image/*" data-upload>
+          Выбрать снимок
+        </label>
+        <figure class="lightbox" data-upload-box hidden>
+          <div class="lightbox__clip" aria-hidden="true"></div>
+          <div class="lightbox__screen"><img data-upload-image alt="Загруженный снимок"></div>
+        </figure>
+        <div class="bars" data-upload-result aria-live="polite"></div>
+      </div>
+
+      <p class="disclaimer">Это учебный проект. Сайт не ставит диагнозы и не заменяет врача.</p>
+      <button class="btn btn--primary" type="button" data-go="home">Пройти тест</button>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>Учебный исследовательский проект «Искусственный интеллект в медицине». Не является медицинским сервисом.</p>
+  </footer>
+
+  <script src="vendor/tf.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

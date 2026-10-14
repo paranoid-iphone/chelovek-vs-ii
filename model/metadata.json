@@ -1,0 +1,11 @@
+{
+ "tfjsVersion": "4.22.0",
+ "packageName": "mobilenetv2-finetune",
+ "modelName": "pneumonia-v2",
+ "timeStamp": "2026-10-14T10:22:02.025978+00:00",
+ "labels": [
+  "Здоров",
+  "Пневмония"
+ ],
+ "imageSize": 224
+}

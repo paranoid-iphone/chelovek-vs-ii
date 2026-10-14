@@ -1,0 +1,85 @@
+{
+ "demo": false,
+ "images": [
+  {
+   "file": "images/test/01.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/02.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/03.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/04.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/05.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/06.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/07.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/08.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/09.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/10.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/11.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/12.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/13.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/14.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/15.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/16.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/17.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/18.jpg",
+   "label": "normal"
+  },
+  {
+   "file": "images/test/19.jpg",
+   "label": "pneumonia"
+  },
+  {
+   "file": "images/test/20.jpg",
+   "label": "pneumonia"
+  }
+ ]
+}
